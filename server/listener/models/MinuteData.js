@@ -4,16 +4,17 @@ const dataPointSchema = new mongoose.Schema({
   name: String,
   origin: String,
   destination: String,
-  secret_key: String,
   timestamp: Date,
 });
 
 const minuteDataSchema = new mongoose.Schema({
-  minute: Date,
+  minute: {
+    type: Date,
+    index: true,
+    expires: 3600,
+  },
   data: [dataPointSchema],
 });
-
-minuteDataSchema.index({ minute: 1 });
 
 const MinuteDataModel = mongoose.model("MinuteData", minuteDataSchema);
 

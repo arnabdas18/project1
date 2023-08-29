@@ -4,7 +4,7 @@ const socketIo = require("socket.io");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 
-const DataModel = require("./models/MinuteData");
+const min = require("./models/MinuteData");
 
 const app = express();
 const server = http.createServer(app);
@@ -17,7 +17,7 @@ io.on("connection", (socket) => {
       validateDataIntegrity(decryptedMessage);
 
     if (safe) {
-      console.log(assumedOriginalMessage);
+      saveToDatabase(assumedOriginalMessage);
     }
   });
 });
@@ -52,14 +52,32 @@ function validateDataIntegrity(message) {
   };
 }
 
-function saveToDatabase(message) {
+async function saveToDatabase(message) {
   const now = new Date();
-  const minute = now.getMinutes();
-  const newData = new DataModel({
-    minute,
-    data: message,
-  });
-  newData.save();
+  const minute = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    now.getHours(),
+    now.getMinutes()
+  );
+
+  try {
+    const existingDocument = await MinuteDataModel.findOne({ minute });
+
+    if (existingDocument) {
+      existingDocument.data.push(message);
+      await existingDocument.save();
+    } else {
+      const newDocument = new MinuteDataModel({
+        minute,
+        data: [message],
+      });
+      await newDocument.save();
+    }
+  } catch (error) {
+    console.error("Error saving to database:", error);
+  }
 }
 
 server.listen(4000, () => {
