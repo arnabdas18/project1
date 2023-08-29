@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const crypto = require("crypto");
 const socket = require("socket.io-client");
@@ -44,11 +45,7 @@ function generateSumCheckMessage(originalMessage) {
 function encryptMessage(message) {
   const key = process.env.KEY;
   const iv = crypto.randomBytes(16);
-  const cipher = crypto.createCipheriv(
-    "aes-256-ctr",
-    "nwybnavbjuofthxxjfdwbevmsmmwmjbf",
-    iv
-  );
+  const cipher = crypto.createCipheriv("aes-256-ctr", key, iv);
   const encryptedMessage = cipher.update(
     JSON.stringify(message),
     "utf-8",

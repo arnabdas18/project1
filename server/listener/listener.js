@@ -1,10 +1,19 @@
+require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 
-const min = require("./models/MinuteData");
+const MinuteDataModel = require("./models/MinuteData");
+
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("DB connected"))
+  .catch((err) => console.log("DB connection failed", err));
 
 const app = express();
 const server = http.createServer(app);
@@ -18,16 +27,16 @@ io.on("connection", (socket) => {
 
     if (safe) {
       saveToDatabase(assumedOriginalMessage);
+      socket.emit("data-added", assumedOriginalMessage);
+    } else {
+      socket.emit("data-validation-failed");
     }
   });
 });
 
 function decryptMessage(encryptedMessage, iv) {
-  const decipher = crypto.createDecipheriv(
-    "aes-256-ctr",
-    "nwybnavbjuofthxxjfdwbevmsmmwmjbf",
-    iv
-  );
+  const key = process.env.KEY;
+  const decipher = crypto.createDecipheriv("aes-256-ctr", key, iv);
   const decryptedMessage = decipher.update(encryptedMessage, "hex", "utf8");
   return JSON.parse(decryptedMessage);
 }
