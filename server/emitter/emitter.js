@@ -1,4 +1,3 @@
-require("dotenv").config();
 const crypto = require("crypto");
 const data = require("./data.json");
 
@@ -19,9 +18,7 @@ function generateRandomMessage() {
   };
 }
 
-const originalMessage = generateRandomMessage();
-
-function sumCheckMessage(originalMessage) {
+function generateSumCheckMessage(originalMessage) {
   const secretKey = crypto
     .createHash("sha256")
     .update(JSON.stringify(originalMessage));
@@ -34,13 +31,13 @@ function sumCheckMessage(originalMessage) {
   return message;
 }
 
-const message = sumCheckMessage(originalMessage);
-
 function encryptMessage(message) {
+  const key = process.env.KEY;
+  const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipheriv(
     "aes-256-ctr",
-    process.env.KEY,
-    process.env.IV
+    "nwybnavbjuofthxxjfdwbevmsmmwmjbf",
+    iv
   );
   const encryptedMessage = cipher.update(
     JSON.stringify(message),
@@ -48,7 +45,14 @@ function encryptMessage(message) {
     "hex"
   );
 
-  return encryptedMessage;
+  return { encryptedMessage, iv };
 }
 
-console.log(encryptMessage(message));
+setInterval(() => {
+  const originalMessage = generateRandomMessage();
+  const sumCheckMessage = generateSumCheckMessage(originalMessage);
+  const { encryptedMessage, iv } = encryptMessage(sumCheckMessage);
+
+  console.log(encryptedMessage);
+  console.log(iv);
+}, 10000);
