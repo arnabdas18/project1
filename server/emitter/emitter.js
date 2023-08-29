@@ -1,5 +1,12 @@
+const express = require("express");
 const crypto = require("crypto");
+const socket = require("socket.io-client");
+
 const data = require("./data.json");
+
+const app = express();
+
+const socketClient = socket.connect("http://localhost:4000");
 
 function generateRandomMessage() {
   const randomNameIndex = Math.floor(Math.random() * data.names.length);
@@ -11,17 +18,20 @@ function generateRandomMessage() {
   const randomDestinationIndex = Math.floor(Math.random() * data.cities.length);
   const randomDestination = data.cities[randomDestinationIndex];
 
-  return {
+  const randomMessage = {
     name: randomName,
     origin: randomOrigin,
     destination: randomDestination,
   };
+
+  return randomMessage;
 }
 
 function generateSumCheckMessage(originalMessage) {
   const secretKey = crypto
     .createHash("sha256")
-    .update(JSON.stringify(originalMessage));
+    .update(JSON.stringify(originalMessage))
+    .digest("hex");
 
   const message = {
     ...originalMessage,
@@ -51,8 +61,10 @@ function encryptMessage(message) {
 setInterval(() => {
   const originalMessage = generateRandomMessage();
   const sumCheckMessage = generateSumCheckMessage(originalMessage);
-  const { encryptedMessage, iv } = encryptMessage(sumCheckMessage);
-
-  console.log(encryptedMessage);
-  console.log(iv);
+  const encryptedPackage = encryptMessage(sumCheckMessage);
+  socketClient.emit("encrypted-package", encryptedPackage);
 }, 10000);
+
+app.listen(3000, () => {
+  console.log("Emitter running on PORT: 3000");
+});
