@@ -11,7 +11,7 @@ const minuteDataSchema = new mongoose.Schema({
   minute: {
     type: Date,
     index: true,
-    expires: 3600,
+    expires: 600,
   },
   data: [dataPointSchema],
 });

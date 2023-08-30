@@ -7,7 +7,7 @@ const data = require("./data.json");
 
 const app = express();
 
-const socketClient = socket.connect("http://localhost:4000");
+const socketClient = socket.connect("http://localhost:5000");
 
 function generateRandomMessage() {
   const randomNameIndex = Math.floor(Math.random() * data.names.length);
@@ -62,6 +62,6 @@ setInterval(() => {
   socketClient.emit("encrypted-package", encryptedPackage);
 }, 10000);
 
-app.listen(3000, () => {
-  console.log("Emitter running on PORT: 3000");
+app.listen(4000, () => {
+  console.log("Emitter running on PORT: 4000");
 });

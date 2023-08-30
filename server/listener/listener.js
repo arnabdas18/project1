@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const http = require("http");
 const socketIo = require("socket.io");
+const cors = require("cors");
 const crypto = require("crypto");
 const mongoose = require("mongoose");
 
@@ -18,6 +19,8 @@ mongoose
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+
+app.use(cors());
 
 io.on("connection", (socket) => {
   socket.on("encrypted-package", ({ encryptedMessage, iv }) => {
@@ -89,6 +92,6 @@ async function saveToDatabase(message) {
   }
 }
 
-server.listen(4000, () => {
-  console.log("Listener is running on port: 4000");
+server.listen(5000, () => {
+  console.log("Listener is running on port: 5000");
 });
